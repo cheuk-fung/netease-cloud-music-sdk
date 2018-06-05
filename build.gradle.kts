@@ -11,6 +11,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("io.reactivex.rxjava2:rxkotlin:2.2.0")
     implementation("org.slf4j:slf4j-api:1.7.25")
+    implementation("org.apache.commons:commons-lang3:3.7")
     implementation("commons-codec:commons-codec:1.11")
 
     val retrofitVersion = "2.4.0"
