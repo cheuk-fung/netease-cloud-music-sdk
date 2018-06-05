@@ -5,7 +5,6 @@ import ng.cloudmusic.api.LoginApi
 import org.apache.commons.codec.digest.DigestUtils
 
 object LoginService {
-
     private val loginApi = LoginApi.create()
 
     fun loginByCellphone(phone: String, password: String): Observable<String> {

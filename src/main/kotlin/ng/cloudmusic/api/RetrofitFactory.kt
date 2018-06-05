@@ -1,5 +1,6 @@
 package ng.cloudmusic.api
 
+import ng.cloudmusic.api.util.CloudMusicApiInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -13,6 +14,7 @@ val retrofit: Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .addConverterFactory(JacksonConverterFactory.create())
         .client(OkHttpClient.Builder()
+                .addInterceptor(CloudMusicApiInterceptor())
                 .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
                 .build())
         .build()
