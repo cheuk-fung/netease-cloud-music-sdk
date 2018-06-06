@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm") version "1.2.41"
     id("java-library")
@@ -9,7 +11,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("io.reactivex.rxjava2:rxkotlin:2.2.0")
     implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("org.apache.commons:commons-lang3:3.7")
     implementation("commons-codec:commons-codec:1.11")
@@ -18,7 +19,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
-    implementation("com.squareup.retrofit2:converter-jackson:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
     implementation("com.squareup.okhttp3:logging-interceptor:3.10.0")
 
@@ -30,6 +31,12 @@ dependencies {
 }
 
 tasks {
+    withType<KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
     withType<Test> {
         useJUnitPlatform()
     }

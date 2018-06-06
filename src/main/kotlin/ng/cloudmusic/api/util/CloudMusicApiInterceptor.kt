@@ -40,7 +40,6 @@ class CloudMusicApiInterceptor : Interceptor {
         private fun buildHeaders(): Headers {
             val headers = Headers.Builder()
                     .set("Accept", "*/*")
-                    .set("Accept-Encoding", "gzip,deflate,sdch")
                     .set("Accept-Language", "zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4")
                     .set("Connection", "keep-alive")
                     .set("Host", "music.163.com")
