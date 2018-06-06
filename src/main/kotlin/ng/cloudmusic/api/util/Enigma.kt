@@ -1,11 +1,9 @@
 package ng.cloudmusic.api.util
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.spec.RSAPublicKeySpec
