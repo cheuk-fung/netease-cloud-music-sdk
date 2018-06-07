@@ -6,8 +6,6 @@ import ng.cloudmusic.api.LoginApi
 import org.apache.commons.codec.digest.DigestUtils
 
 class LoginService(private val loginApi: LoginApi) {
-    private val gson = Gson()
-
     fun loginByCellphone(phone: String, password: String): Observable<Profile> {
         val credential = LoginApi.Credential(phone, DigestUtils.md5Hex(password))
         return loginApi.loginByCellphone(credential)
@@ -21,4 +19,8 @@ class LoginService(private val loginApi: LoginApi) {
     }
 
     data class Profile(val nickname: String)
+
+    companion object {
+        private val gson = Gson()
+    }
 }

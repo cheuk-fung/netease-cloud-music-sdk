@@ -21,7 +21,9 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
-    implementation("com.squareup.okhttp3:logging-interceptor:3.10.0")
+    val okhttpVersion = "3.10.0"
+    implementation("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
+    implementation("com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion")
 
     val junitVersion = "5.2.0"
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
