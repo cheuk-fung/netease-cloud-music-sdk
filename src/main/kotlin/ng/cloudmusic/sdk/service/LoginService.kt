@@ -10,7 +10,7 @@ class LoginService(private val loginApi: LoginApi) {
         val credential = LoginApi.Credential(phone, DigestUtils.md5Hex(password))
         return loginApi.loginByCellphone(credential)
                 .map {
-                    if (it["code"].asInt != 200) {
+                    if (it["code"]?.asInt != 200) {
                         // TODO specific type of exception
                         throw RuntimeException(it.toString())
                     }

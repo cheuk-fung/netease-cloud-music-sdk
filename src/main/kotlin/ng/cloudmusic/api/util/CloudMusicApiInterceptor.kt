@@ -1,5 +1,6 @@
 package ng.cloudmusic.api.util
 
+import okhttp3.CookieJar
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl
@@ -10,27 +11,31 @@ import okhttp3.Response
 import okio.Buffer
 import org.slf4j.LoggerFactory
 
-class CloudMusicApiInterceptor : Interceptor {
+class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (!"POST".equals(request.method(), ignoreCase = true)) {
             return chain.proceed(request)
         }
 
-        val newRequest = RequestRebuilder(request).rebuild()
+        val newRequest = RequestRebuilder(request, cookieJar).rebuild()
         return chain.proceed(newRequest)
     }
 
-    private class RequestRebuilder(private val originalRequest: Request) {
-        fun rebuild(): Request = Request.Builder()
+    private class RequestRebuilder(private val originalRequest: Request, private val cookieJar: CookieJar) {
+        fun rebuild(): Request = originalRequest.newBuilder()
                 .url(buildUrl())
                 .headers(buildHeaders())
                 .post(buildEncryptedBody())
                 .build()
 
         private fun buildUrl(): HttpUrl {
+            val csrf = cookieJar.loadForRequest(originalRequest.url())
+                    .find { it.name() == "__csrf" }
+                    ?.value()
+
             val url = originalRequest.url().newBuilder()
-                    .addQueryParameter("csrf_token", "")
+                    .addQueryParameter("csrf_token", csrf ?: "")
                     .build()
             log.debug("buildUrl(): url={}", url)
 
@@ -38,11 +43,9 @@ class CloudMusicApiInterceptor : Interceptor {
         }
 
         private fun buildHeaders(): Headers {
-            val headers = Headers.Builder()
+            val headers = originalRequest.headers().newBuilder()
                     .set("Accept", "*/*")
                     .set("Accept-Language", "zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4")
-                    .set("Connection", "keep-alive")
-                    .set("Host", "music.163.com")
                     .set("Referer", "https://music.163.com/")
                     .set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
                     .build()
@@ -52,8 +55,8 @@ class CloudMusicApiInterceptor : Interceptor {
         }
 
         private fun buildEncryptedBody(): RequestBody {
-            val rawBody = getRawBody()
-            val encryptedBody = Enigma.encryptRequestBody(rawBody)
+            val body = getBody()
+            val encryptedBody = Enigma.encryptRequestBody(body)
             log.debug("buildEncryptedBody(): encryptedBody={}", encryptedBody)
 
             return encryptedBody.entries
@@ -61,14 +64,14 @@ class CloudMusicApiInterceptor : Interceptor {
                     .build()
         }
 
-        private fun getRawBody(): String {
-            val body = originalRequest.body() ?: return "{}"
+        private fun getBody(): String {
             val buffer = Buffer()
-            body.writeTo(buffer)
+            originalRequest.body()?.writeTo(buffer)
             val rawBody = buffer.readUtf8()
-            log.debug("getRawBody(): body={}", rawBody)
+            val body = if (rawBody.isBlank()) "{}" else rawBody
+            log.debug("getBody(): body={}", body)
 
-            return rawBody
+            return body
         }
 
         companion object {
