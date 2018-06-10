@@ -29,9 +29,10 @@ object Enigma {
     private fun aesEncrypt(text: String, secretKey: String): String {
         val secretKeySpec = SecretKeySpec(secretKey.toByteArray(), "AES")
         val ivParameterSpec = IvParameterSpec(IV.toByteArray())
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
-        val encryptedText = cipher.doFinal(text.toByteArray())
+        val encryptedText = Cipher.getInstance("AES/CBC/PKCS5Padding").run {
+            init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
+            doFinal(text.toByteArray())
+        }
         return Base64.encodeBase64String(encryptedText)
     }
 
@@ -40,9 +41,10 @@ object Enigma {
     private fun rsaEncrypt(text: String): String {
         val rsaPublicKeySpec = RSAPublicKeySpec(MODULUS, PUBLIC_EXPONENT)
         val rsaPublicKey = KeyFactory.getInstance("RSA").generatePublic(rsaPublicKeySpec)
-        val cipher = Cipher.getInstance("RSA/ECB/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, rsaPublicKey)
-        val encryptedText = cipher.doFinal(text.toByteArray())
+        val encryptedText = Cipher.getInstance("RSA/ECB/NoPadding").run {
+            init(Cipher.ENCRYPT_MODE, rsaPublicKey)
+            doFinal(text.toByteArray())
+        }
         return StringUtils.leftPad(Hex.encodeHexString(encryptedText), 256, '0')
     }
 }

@@ -18,8 +18,8 @@ class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Interceptor {
             return chain.proceed(request)
         }
 
-        val newRequest = RequestRebuilder(request, cookieJar).rebuild()
-        return chain.proceed(newRequest)
+        return RequestRebuilder(request, cookieJar).rebuild()
+                .let(chain::proceed)
     }
 
     private class RequestRebuilder(private val originalRequest: Request, private val cookieJar: CookieJar) {
@@ -34,44 +34,39 @@ class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Interceptor {
                     .find { it.name() == "__csrf" }
                     ?.value()
 
-            val url = originalRequest.url().newBuilder()
+            return originalRequest.url().newBuilder()
                     .addQueryParameter("csrf_token", csrf ?: "")
                     .build()
-            log.debug("buildUrl(): url={}", url)
-
-            return url
+                    .also { log.debug("buildUrl(): url={}", it) }
         }
 
         private fun buildHeaders(): Headers {
-            val headers = originalRequest.headers().newBuilder()
+            return originalRequest.headers().newBuilder()
                     .set("Accept", "*/*")
                     .set("Accept-Language", "zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4")
                     .set("Referer", "https://music.163.com/")
                     .set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
                     .build()
-            log.debug("buildHeaders(): headers={}", headers)
-
-            return headers
+                    .also { log.debug("buildHeaders(): headers={}", it) }
         }
 
         private fun buildEncryptedBody(): RequestBody {
-            val body = getBody()
-            val encryptedBody = Enigma.encryptRequestBody(body)
-            log.debug("buildEncryptedBody(): encryptedBody={}", encryptedBody)
+            val encryptedBody = readBody()
+                    .let(Enigma::encryptRequestBody)
+                    .also { log.debug("buildEncryptedBody(): encryptedBody={}", it) }
 
             return encryptedBody.entries
                     .fold(FormBody.Builder()) { builder, (k, v) -> builder.add(k, v) }
                     .build()
         }
 
-        private fun getBody(): String {
+        private fun readBody(): String {
             val buffer = Buffer()
             originalRequest.body()?.writeTo(buffer)
-            val rawBody = buffer.readUtf8()
-            val body = if (rawBody.isBlank()) "{}" else rawBody
-            log.debug("getBody(): body={}", body)
 
-            return body
+            return buffer.readUtf8()
+                    .let { if (it.isBlank()) "{}" else it }
+                    .also { log.debug("readBody(): body={}", it) }
         }
 
         companion object {
