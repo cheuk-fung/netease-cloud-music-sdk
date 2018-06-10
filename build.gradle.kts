@@ -30,6 +30,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
+    testImplementation("org.assertj:assertj-core:3.10.0")
+    testImplementation("org.mockito:mockito-core:2.18.3")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 }
 
