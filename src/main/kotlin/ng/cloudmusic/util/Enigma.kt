@@ -1,4 +1,4 @@
-package ng.cloudmusic.api.util
+package ng.cloudmusic.util
 
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.codec.binary.Hex

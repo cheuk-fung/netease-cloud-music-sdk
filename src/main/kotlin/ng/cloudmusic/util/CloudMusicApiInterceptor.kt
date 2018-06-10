@@ -1,4 +1,4 @@
-package ng.cloudmusic.api.util
+package ng.cloudmusic.util
 
 import okhttp3.CookieJar
 import okhttp3.FormBody
