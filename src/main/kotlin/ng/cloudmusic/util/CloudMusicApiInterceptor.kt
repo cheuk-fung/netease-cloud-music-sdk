@@ -11,7 +11,7 @@ import okhttp3.Response
 import okio.Buffer
 import org.slf4j.LoggerFactory
 
-class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Interceptor {
+internal class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (!"POST".equals(request.method(), ignoreCase = true)) {

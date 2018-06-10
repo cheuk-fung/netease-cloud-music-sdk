@@ -5,7 +5,7 @@ import io.reactivex.Observable
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface LoginApi {
+internal interface LoginApi {
     @POST("login/cellphone")
     fun loginByCellphone(@Body credential: Credential): Observable<JsonObject>
 
