@@ -1,8 +1,10 @@
 package ng.cloudmusic.sdk
 
 import ng.cloudmusic.api.LoginApi
+import ng.cloudmusic.api.RadioApi
 import ng.cloudmusic.api.util.CloudMusicApiInterceptor
 import ng.cloudmusic.sdk.service.LoginService
+import ng.cloudmusic.sdk.service.RadioService
 import okhttp3.CookieJar
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
@@ -29,4 +31,5 @@ class CloudMusicSDK(cookieJar: CookieJar) {
             .build()
 
     val loginService by lazy { LoginService(retrofit.create(LoginApi::class.java)) }
+    val radioService by lazy { RadioService(retrofit.create(RadioApi::class.java)) }
 }
