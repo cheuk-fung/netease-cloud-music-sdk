@@ -14,7 +14,8 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("org.apache.commons:commons-lang3:3.7")
     implementation("commons-codec:commons-codec:1.11")
-    implementation("cglib:cglib:3.2.6")
+    implementation("net.bytebuddy:byte-buddy:1.8.12")
+    implementation("com.google.code.gson:gson:2.8.5")
 
     val retrofitVersion = "2.4.0"
     implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
@@ -32,6 +33,7 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:3.10.0")
     testImplementation("org.mockito:mockito-core:2.18.3")
+    testImplementation("org.skyscreamer:jsonassert:1.2.3")
     testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 }
 

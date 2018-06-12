@@ -2,14 +2,22 @@ package ng.cloudmusic.sdk
 
 import com.google.gson.JsonObject
 import io.reactivex.Observable
-import net.sf.cglib.proxy.Enhancer
-import net.sf.cglib.proxy.MethodInterceptor
-import net.sf.cglib.proxy.MethodProxy
+import net.bytebuddy.ByteBuddy
+import net.bytebuddy.description.method.MethodDescription
+import net.bytebuddy.description.type.TypeDescription
+import net.bytebuddy.implementation.MethodDelegation
+import net.bytebuddy.implementation.bind.annotation.Pipe
+import net.bytebuddy.matcher.ElementMatcher
+import net.bytebuddy.matcher.ElementMatcher.Junction
+import net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith
+import net.bytebuddy.matcher.ElementMatchers.isDeclaredBy
+import net.bytebuddy.matcher.ElementMatchers.not
+import net.bytebuddy.matcher.ElementMatchers.returnsGeneric
 import ng.cloudmusic.api.LoginApi
 import ng.cloudmusic.api.RadioApi
-import ng.cloudmusic.util.CloudMusicApiInterceptor
 import ng.cloudmusic.sdk.service.LoginService
 import ng.cloudmusic.sdk.service.RadioService
+import ng.cloudmusic.util.CloudMusicApiInterceptor
 import okhttp3.CookieJar
 import okhttp3.JavaNetCookieJar
 import okhttp3.OkHttpClient
@@ -19,16 +27,15 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.POST
-import java.lang.reflect.Method
-import java.lang.reflect.ParameterizedType
 import java.net.CookieHandler
+import java.util.function.Function
 import kotlin.reflect.KClass
 
 class CloudMusicSDK(cookieJar: CookieJar) {
     constructor(cookieHandler: CookieHandler) : this(JavaNetCookieJar(cookieHandler))
 
-    val loginService by lazy { LoginService(createApi(LoginApi::class)) }
-    val radioService by lazy { RadioService(createApi(RadioApi::class)) }
+    val loginService by lazy { createApi(LoginApi::class).let(::LoginService) }
+    val radioService by lazy { createApi(RadioApi::class).let(::RadioService) }
 
     private val retrofit = Retrofit.Builder()
             .baseUrl("https://music.163.com/weapi/")
@@ -43,47 +50,42 @@ class CloudMusicSDK(cookieJar: CookieJar) {
             .build()
 
     private inline fun <reified T : Any> createApi(clazz: KClass<T>): T {
-        return errorProbe(retrofit.create(clazz.java))
+        return retrofit.create(clazz.java).let(this::errorProbe)
     }
 
     internal inline fun <reified T> errorProbe(api: T): T {
-        return Enhancer().run {
-            setSuperclass(T::class.java)
-            setCallback(ErrorProbeInterceptor(api))
-            create() as T
+        val isDeclaredByT = isDeclaredBy<MethodDescription>(T::class.java)
+        return byteBuddy
+                .subclass(T::class.java)
+                .method(isDeclaredByT and isPOST and returnsJson)
+                .intercept(MethodDelegation.withDefaultConfiguration()
+                        .withBinders(Pipe.Binder.install(Function::class.java))
+                        .to(ErrorProbeInterceptor(api)))
+                .method(isDeclaredByT and not(isPOST and returnsJson))
+                .intercept(MethodDelegation.to(api))
+                .make()
+                .load(T::class.java.classLoader)
+                .loaded
+                .getDeclaredConstructor()
+                .newInstance()
+    }
+
+    private infix fun <S, U : S> Junction<S>.and(other: ElementMatcher<in U>): Junction<U> {
+        return this.and(other)
+    }
+
+    internal class ErrorProbeInterceptor<T>(private val api: T) {
+        @Suppress("unused")
+        fun intercept(@Pipe pipe: Function<T, Observable<JsonObject>>): Observable<JsonObject> {
+            return pipe.apply(api).map { if (it["code"]?.asInt != 200) throw NotOK(it) else it }
         }
     }
 
-    internal class ErrorProbeInterceptor<T>(private val api: T) : MethodInterceptor {
-        override fun intercept(obj: Any, method: Method, args: Array<out Any>?, proxy: MethodProxy): Any {
-            if (method.declaringClass == Object::class.java) {
-                return proxy.invokeSuper(obj, args)
-            }
+    internal companion object {
+        val byteBuddy = ByteBuddy()
 
-            val result = proxy.invoke(api, args)
-            if (shouldProbe(method)) {
-                @Suppress("UNCHECKED_CAST")
-                val response = result as Observable<JsonObject>
-
-                return response.map {
-                    if (it["code"]?.asInt != 200) {
-                        throw NotOK(it)
-                    }
-                    it
-                }
-            }
-
-            return result
-        }
-
-        private fun shouldProbe(method: Method): Boolean {
-            if (!method.isAnnotationPresent(POST::class.java)) {
-                return false
-            }
-
-            val returnType = method.genericReturnType as? ParameterizedType ?: return false
-            return returnType.rawType == Observable::class.java
-                    && returnType.actualTypeArguments contentEquals arrayOf(JsonObject::class.java)
-        }
+        val isPOST = isAnnotatedWith<MethodDescription>(POST::class.java)!!
+        val returnsJson = returnsGeneric<MethodDescription>(TypeDescription.Generic.Builder
+                .parameterizedType(Observable::class.java, JsonObject::class.java).build())!!
     }
 }
