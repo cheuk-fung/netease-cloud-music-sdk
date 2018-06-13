@@ -49,9 +49,7 @@ class CloudMusicSDK(cookieJar: CookieJar) {
                     .build())
             .build()
 
-    private inline fun <reified T : Any> createApi(clazz: KClass<T>): T {
-        return retrofit.create(clazz.java).let(this::errorProbe)
-    }
+    private inline fun <reified T : Any> createApi(clazz: KClass<T>) = retrofit.create(clazz.java).let(this::errorProbe)
 
     internal inline fun <reified T> errorProbe(api: T): T {
         val isDeclaredByT = isDeclaredBy<MethodDescription>(T::class.java)
@@ -70,9 +68,7 @@ class CloudMusicSDK(cookieJar: CookieJar) {
                 .newInstance()
     }
 
-    private infix fun <S, U : S> Junction<S>.and(other: ElementMatcher<in U>): Junction<U> {
-        return this.and(other)
-    }
+    private infix fun <S, U : S> Junction<S>.and(other: ElementMatcher<in U>) = this.and(other)
 
     internal class ErrorProbeInterceptor<T>(private val api: T) {
         @Suppress("unused")

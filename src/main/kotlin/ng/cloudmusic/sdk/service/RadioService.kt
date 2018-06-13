@@ -1,11 +1,13 @@
 package ng.cloudmusic.sdk.service
 
-import com.google.gson.JsonObject
 import io.reactivex.Observable
 import ng.cloudmusic.api.RadioApi
+import ng.cloudmusic.sdk.data.Song
+import ng.cloudmusic.util.getAs
 
 class RadioService internal constructor(private val radioApi: RadioApi) {
-    fun personalFM(): Observable<JsonObject> {
+    fun personalFM(): Observable<List<Song>> {
         return radioApi.personalFM()
+                .map { it["data"].getAs<List<Song>>() }
     }
 }
