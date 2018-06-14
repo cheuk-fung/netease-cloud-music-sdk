@@ -1,7 +1,7 @@
 package ng.cloudmusic.sdk
 
 import com.google.gson.JsonObject
-import io.reactivex.Observable
+import io.reactivex.Single
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.description.method.MethodDescription
 import net.bytebuddy.description.type.TypeDescription
@@ -72,7 +72,7 @@ class CloudMusicSDK(cookieJar: CookieJar) {
 
     internal class ErrorProbeInterceptor<T>(private val api: T) {
         @Suppress("unused")
-        fun intercept(@Pipe pipe: Function<T, Observable<JsonObject>>): Observable<JsonObject> {
+        fun intercept(@Pipe pipe: Function<T, Single<JsonObject>>): Single<JsonObject> {
             return pipe.apply(api).map { if (it["code"]?.asInt != 200) throw NotOK(it) else it }
         }
     }
@@ -82,6 +82,6 @@ class CloudMusicSDK(cookieJar: CookieJar) {
 
         val isPOST = isAnnotatedWith<MethodDescription>(POST::class.java)!!
         val returnsJson = returnsGeneric<MethodDescription>(TypeDescription.Generic.Builder
-                .parameterizedType(Observable::class.java, JsonObject::class.java).build())!!
+                .parameterizedType(Single::class.java, JsonObject::class.java).build())!!
     }
 }

@@ -1,7 +1,7 @@
 package ng.cloudmusic.sdk
 
 import com.google.gson.JsonObject
-import io.reactivex.Observable
+import io.reactivex.Single
 import okhttp3.CookieJar
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -17,15 +17,15 @@ import retrofit2.http.POST
 internal class CloudMusicSDKTest {
     internal interface Api {
         @POST
-        fun valid(): Observable<JsonObject>
+        fun valid(): Single<JsonObject>
 
-        fun notPost(): Observable<JsonObject>
-
-        @POST
-        fun notJsonObject(): Observable<String>
+        fun notPost(): Single<JsonObject>
 
         @POST
-        fun notObservable(): String
+        fun notJsonObject(): Single<String>
+
+        @POST
+        fun notSingle(): String
     }
 
     private val sdk = CloudMusicSDK(CookieJar.NO_COOKIES)
@@ -35,12 +35,12 @@ internal class CloudMusicSDKTest {
     @Test
     fun `errorProbe() - call valid method with code 200 should be OK`() {
         `when`(api.valid())
-                .thenReturn(Observable.just(JsonObject().apply { addProperty("code", 200) }))
-                .thenReturn(Observable.just(JsonObject().apply { addProperty("code", "200") }))
+                .thenReturn(Single.just(JsonObject().apply { addProperty("code", 200) }))
+                .thenReturn(Single.just(JsonObject().apply { addProperty("code", "200") }))
 
-        errorProbedApi.valid().blockingSingle()
+        errorProbedApi.valid().blockingGet()
                 .also { JSONAssert.assertEquals(it.toString(), """{"code": 200}""", true) }
-        errorProbedApi.valid().blockingSingle()
+        errorProbedApi.valid().blockingGet()
                 .also { JSONAssert.assertEquals(it.toString(), """{"code": "200"}""", true) }
 
         verify(api, times(2)).valid()
@@ -49,23 +49,23 @@ internal class CloudMusicSDKTest {
     @Test
     fun `errorProbe() - call valid method with other code should not be OK`() {
         `when`(api.valid())
-                .thenReturn(Observable.just(JsonObject().apply {
+                .thenReturn(Single.just(JsonObject().apply {
                     addProperty("code", 404)
                     addProperty("msg", "first time")
                 }))
-                .thenReturn(Observable.just(JsonObject().apply {
+                .thenReturn(Single.just(JsonObject().apply {
                     addProperty("code", "404")
                     addProperty("msg", "second time")
                 }))
 
-        assertThrows<NotOK> { errorProbedApi.valid().blockingSingle() }
+        assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
                 .also {
                     assertThat(it.code).isEqualTo(404)
                     assertThat(it.msg).isEqualTo("first time")
                 }
 
-        assertThrows<NotOK> { errorProbedApi.valid().blockingSingle() }
+        assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
                 .also {
                     assertThat(it.code).isEqualTo(404)
@@ -77,9 +77,9 @@ internal class CloudMusicSDKTest {
 
     @Test
     fun `errorProbe() - call valid method without code should not be OK`() {
-        `when`(api.valid()).thenReturn(Observable.just(JsonObject().apply { addProperty("msg", "no code") }))
+        `when`(api.valid()).thenReturn(Single.just(JsonObject().apply { addProperty("msg", "no code") }))
 
-        assertThrows<NotOK> { errorProbedApi.valid().blockingSingle() }
+        assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
                 .also {
                     assertThat(it.code).isEqualTo(0)
@@ -91,9 +91,9 @@ internal class CloudMusicSDKTest {
 
     @Test
     fun `errorProbe() - not post method should not be probed`() {
-        `when`(api.notPost()).thenReturn(Observable.just(JsonObject().apply { addProperty("msg", "not post") }))
+        `when`(api.notPost()).thenReturn(Single.just(JsonObject().apply { addProperty("msg", "not post") }))
 
-        errorProbedApi.notPost().blockingSingle()
+        errorProbedApi.notPost().blockingGet()
                 .let { JSONAssert.assertEquals(it.toString(), """{"msg": "not post"}""", true) }
 
         verify(api).notPost()
@@ -101,22 +101,22 @@ internal class CloudMusicSDKTest {
 
     @Test
     fun `errorProbe() - method not returning JsonObject should not be probed`() {
-        `when`(api.notJsonObject()).thenReturn(Observable.just("not JsonObject"))
+        `when`(api.notJsonObject()).thenReturn(Single.just("not JsonObject"))
 
-        errorProbedApi.notJsonObject().blockingSingle()
+        errorProbedApi.notJsonObject().blockingGet()
                 .also { assertThat(it).isEqualTo("not JsonObject") }
 
         verify(api).notJsonObject()
     }
 
     @Test
-    fun `errorProbe() - method not returning Observable should not be probed`() {
-        `when`(api.notObservable()).thenReturn("not Observable")
+    fun `errorProbe() - method not returning Single should not be probed`() {
+        `when`(api.notSingle()).thenReturn("not Single")
 
-        errorProbedApi.notObservable()
-                .also { assertThat(it).isEqualTo("not Observable") }
+        errorProbedApi.notSingle()
+                .also { assertThat(it).isEqualTo("not Single") }
 
-        verify(api).notObservable()
+        verify(api).notSingle()
     }
 
     @Test
