@@ -6,4 +6,4 @@ import com.google.gson.reflect.TypeToken
 
 internal val gson = Gson()
 
-internal inline fun <reified T> JsonElement.getAs() = gson.fromJson<T>(this, object : TypeToken<T>() {}.type)!!
+internal inline fun <reified T> JsonElement.getAs(): T = gson.fromJson<T>(this, object : TypeToken<T>() {}.type)

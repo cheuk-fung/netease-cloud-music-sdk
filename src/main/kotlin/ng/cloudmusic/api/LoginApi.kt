@@ -7,7 +7,7 @@ import retrofit2.http.POST
 
 internal interface LoginApi {
     @POST("login/cellphone")
-    fun loginByCellphone(@Body credential: Credential): Single<JsonObject>
+    fun loginByCellphone(@Body loginByCellphoneRequest: LoginByCellphoneRequest): Single<JsonObject>
 
-    data class Credential(val phone: String, val password: String, val rememberLogin: String = "true")
+    data class LoginByCellphoneRequest(val phone: String, val password: String, val rememberLogin: String = "true")
 }

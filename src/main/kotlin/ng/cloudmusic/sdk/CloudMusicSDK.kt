@@ -2,8 +2,10 @@ package ng.cloudmusic.sdk
 
 import ng.cloudmusic.api.LoginApi
 import ng.cloudmusic.api.RadioApi
+import ng.cloudmusic.api.SongApi
 import ng.cloudmusic.sdk.service.LoginService
 import ng.cloudmusic.sdk.service.RadioService
+import ng.cloudmusic.sdk.service.SongService
 import ng.cloudmusic.util.CloudMusicApiInterceptor
 import ng.cloudmusic.util.ResponseErrorProber
 import okhttp3.CookieJar
@@ -22,6 +24,7 @@ class CloudMusicSDK(cookieJar: CookieJar) {
 
     val loginService by lazy { createApi(LoginApi::class).let(::LoginService) }
     val radioService by lazy { createApi(RadioApi::class).let(::RadioService) }
+    val songService by lazy { createApi(SongApi::class).let(::SongService) }
 
     private val retrofit = Retrofit.Builder()
             .baseUrl("https://music.163.com/weapi/")

@@ -6,8 +6,6 @@ import ng.cloudmusic.sdk.data.Song
 import ng.cloudmusic.util.getAs
 
 class RadioService internal constructor(private val radioApi: RadioApi) {
-    fun personalFM(): Observable<Song> {
-        return radioApi.personalFM()
-                .flattenAsObservable { it["data"].getAs<List<Song>>() }
-    }
+    fun personalFM(): Observable<Song> = radioApi.personalFM()
+            .flattenAsObservable { it["data"].getAs<List<Song>>() }
 }
