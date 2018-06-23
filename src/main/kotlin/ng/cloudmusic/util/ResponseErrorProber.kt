@@ -8,6 +8,7 @@ import net.bytebuddy.description.type.TypeDescription
 import net.bytebuddy.implementation.MethodDelegation
 import net.bytebuddy.implementation.bind.annotation.Pipe
 import net.bytebuddy.matcher.ElementMatcher
+import net.bytebuddy.matcher.ElementMatcher.Junction
 import net.bytebuddy.matcher.ElementMatchers.isAnnotatedWith
 import net.bytebuddy.matcher.ElementMatchers.isDeclaredBy
 import net.bytebuddy.matcher.ElementMatchers.not
@@ -39,7 +40,7 @@ internal object ResponseErrorProber {
                 .newInstance()
     }
 
-    private infix fun <S, U : S> ElementMatcher.Junction<S>.and(other: ElementMatcher<in U>) = this.and(other)
+    private infix fun <S, U : S> Junction<S>.and(other: ElementMatcher<in U>): Junction<U> = this.and(other)
 
     internal interface ApiForwarder<in T, out R> {
         operator fun invoke(api: T): R

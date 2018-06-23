@@ -14,8 +14,8 @@ import org.mockito.Mockito.verifyZeroInteractions
 import org.skyscreamer.jsonassert.JSONAssert
 import retrofit2.http.POST
 
-internal class ResponseErrorProberTest {
-    internal interface Api {
+class ResponseErrorProberTest {
+    interface Api {
         @POST
         fun valid(): Single<JsonObject>
 
@@ -59,16 +59,16 @@ internal class ResponseErrorProberTest {
 
         assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
-                .also {
-                    assertThat(it.code).isEqualTo(404)
-                    assertThat(it.msg).isEqualTo("first time")
+                .apply {
+                    assertThat(code).isEqualTo(404)
+                    assertThat(msg).isEqualTo("first time")
                 }
 
         assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
-                .also {
-                    assertThat(it.code).isEqualTo(404)
-                    assertThat(it.msg).isEqualTo("second time")
+                .apply {
+                    assertThat(code).isEqualTo(404)
+                    assertThat(msg).isEqualTo("second time")
                 }
 
         verify(api, times(2)).valid()
@@ -80,9 +80,9 @@ internal class ResponseErrorProberTest {
 
         assertThrows<NotOK> { errorProbedApi.valid().blockingGet() }
                 .errorResponse
-                .also {
-                    assertThat(it.code).isEqualTo(0)
-                    assertThat(it.msg).isEqualTo("no code")
+                .apply {
+                    assertThat(code).isEqualTo(0)
+                    assertThat(msg).isEqualTo("no code")
                 }
 
         verify(api).valid()

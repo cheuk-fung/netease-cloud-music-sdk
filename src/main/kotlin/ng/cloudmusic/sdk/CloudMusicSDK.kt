@@ -38,6 +38,6 @@ class CloudMusicSDK(cookieJar: CookieJar) {
                     .build())
             .build()
 
-    private inline fun <reified T : Any> createApi(clazz: KClass<T>) =
+    private inline fun <reified T : Any> createApi(clazz: KClass<T>): T =
             retrofit.create(clazz.java).let(ResponseErrorProber::probe)
 }

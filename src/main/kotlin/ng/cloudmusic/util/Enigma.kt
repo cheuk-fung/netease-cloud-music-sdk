@@ -24,7 +24,7 @@ internal object Enigma {
         return mapOf("params" to params, "encSecKey" to encSecKey)
     }
 
-    private fun encryptParams(text: String, secretKey: String) = aesEncrypt(aesEncrypt(text, NONCE), secretKey)
+    private fun encryptParams(text: String, secretKey: String): String = aesEncrypt(aesEncrypt(text, NONCE), secretKey)
 
     private fun aesEncrypt(text: String, secretKey: String): String {
         val secretKeySpec = SecretKeySpec(secretKey.toByteArray(), "AES")
@@ -36,7 +36,7 @@ internal object Enigma {
         return Base64.encodeBase64String(encryptedText)
     }
 
-    private fun encryptSecretKey(secretKey: String) = rsaEncrypt(secretKey.reversed())
+    private fun encryptSecretKey(secretKey: String): String = rsaEncrypt(secretKey.reversed())
 
     private fun rsaEncrypt(text: String): String {
         val rsaPublicKeySpec = RSAPublicKeySpec(MODULUS, PUBLIC_EXPONENT)
