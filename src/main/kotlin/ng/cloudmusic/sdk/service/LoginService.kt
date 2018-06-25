@@ -7,8 +7,7 @@ import org.apache.commons.codec.digest.DigestUtils
 
 class LoginService internal constructor(private val loginApi: LoginApi) {
     fun loginByCellphone(phone: String, password: String): Single<Profile> =
-            LoginApi.LoginByCellphoneRequest(phone, DigestUtils.md5Hex(password))
-                    .let(loginApi::loginByCellphone)
+            loginApi.loginByCellphone(LoginApi.LoginByCellphoneRequest(phone, DigestUtils.md5Hex(password)))
                     .map { it["profile"].getAs<Profile>() }
 
     data class Profile(val nickname: String)

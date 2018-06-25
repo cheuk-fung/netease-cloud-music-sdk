@@ -50,15 +50,11 @@ internal class CloudMusicApiInterceptor(private val cookieJar: CookieJar) : Inte
                     .also { log.debug("buildHeaders(): headers={}", it) }
         }
 
-        private fun buildEncryptedBody(): RequestBody {
-            val encryptedBody = readBody()
-                    .let(Enigma::encryptRequestBody)
-                    .also { log.debug("buildEncryptedBody(): encryptedBody={}", it) }
-
-            return encryptedBody.entries
-                    .fold(FormBody.Builder()) { builder, (k, v) -> builder.add(k, v) }
-                    .build()
-        }
+        private fun buildEncryptedBody(): RequestBody = Enigma.encryptRequestBody(readBody())
+                .also { log.debug("buildEncryptedBody(): encryptedBody={}", it) }
+                .entries
+                .fold(FormBody.Builder()) { builder, (k, v) -> builder.add(k, v) }
+                .build()
 
         private fun readBody(): String {
             val buffer = Buffer()

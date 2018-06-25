@@ -8,8 +8,7 @@ import ng.cloudmusic.util.getAs
 
 class SongService internal constructor(private val songApi: SongApi) {
     fun songFile(id: Int, quality: SongQuality): Maybe<SongFile> =
-            SongApi.SongFileRequest(listOf(id), quality.bitRate)
-                    .let(songApi::songFile)
+            songApi.songFile(SongApi.SongFileRequest(listOf(id), quality.bitRate))
                     .flatMapMaybe {
                         it["data"].asJsonArray
                                 .firstOrNull { it.asJsonObject["code"].asInt == 200 }

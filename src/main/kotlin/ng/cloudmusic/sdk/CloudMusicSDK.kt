@@ -22,9 +22,9 @@ import kotlin.reflect.KClass
 class CloudMusicSDK(cookieJar: CookieJar) {
     constructor(cookieHandler: CookieHandler) : this(JavaNetCookieJar(cookieHandler))
 
-    val loginService by lazy { createApi(LoginApi::class).let(::LoginService) }
-    val radioService by lazy { createApi(RadioApi::class).let(::RadioService) }
-    val songService by lazy { createApi(SongApi::class).let(::SongService) }
+    val loginService by lazy { LoginService(createApi(LoginApi::class)) }
+    val radioService by lazy { RadioService(createApi(RadioApi::class)) }
+    val songService by lazy { SongService(createApi(SongApi::class)) }
 
     private val retrofit = Retrofit.Builder()
             .baseUrl("https://music.163.com/weapi/")
@@ -39,5 +39,5 @@ class CloudMusicSDK(cookieJar: CookieJar) {
             .build()
 
     private inline fun <reified T : Any> createApi(clazz: KClass<T>): T =
-            retrofit.create(clazz.java).let(ResponseErrorProber::probe)
+            ResponseErrorProber.probe(retrofit.create(clazz.java))
 }
